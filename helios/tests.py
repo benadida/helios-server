@@ -7,6 +7,7 @@ import json
 import logging
 import random as stdlib_random
 import re
+import tempfile
 import uuid
 from io import StringIO
 from types import SimpleNamespace
@@ -856,7 +857,7 @@ class OffloadedCastVoteTests(TestCase):
         self.vote_json = datatypes.LDObject.instantiate(vote, datatype='legacy/EncryptedVote').serialize()
         # the booth fingerprints compact JSON, not the spaced JSON stored in the DB
         self.booth_json = json.dumps(utils.from_json(self.vote_json), sort_keys=True, separators=(',', ':'))
-        self.cast_vote = models.CastVote.objects.create(voter=self.voter, vote=vote, vote_hash=crypto_utils.hash_b64(self.booth_json), cast_at=timezone.now())
+        self.cast_vote = models.CastVote.objects.create(voter=self.voter, vote=vote, vote_hash=crypto_utils.hash_b64(self.booth_json), verified_at=timezone.now())
         self.voter.store_vote(self.cast_vote)
 
     def _offload(self, content=None):
@@ -941,6 +942,21 @@ class OffloadedCastVoteTests(TestCase):
         self._release_result(200)
         self.assertIn('test: offloaded 0 votes, kept 1', self._offload_command())
         self.assertIsNotNone(models.CastVote.objects.get(id=self.cast_vote.id).vote)
+
+    def test_offload_keeps_unverified_vote(self):
+        models.CastVote.objects.filter(id=self.cast_vote.id).update(verified_at=None)
+        self._release_result(200)
+        self.assertIn('test: offloaded 0 votes, kept 0', self._offload_command())
+        self.assertIsNone(models.CastVote.objects.get(id=self.cast_vote.id).vote_offloaded_at)
+
+    def test_offload_refuses_local_storage(self):
+        self._release_result(200)
+        with tempfile.TemporaryDirectory() as location:
+            with self.settings(STORAGES={**settings.STORAGES, 'ballots': {'BACKEND': 'django.core.files.storage.FileSystemStorage', 'OPTIONS': {'location': location}}}):
+                with self.assertRaises(CommandError):
+                    self._offload_command()
+                self.assertIsNone(models.CastVote.objects.get(id=self.cast_vote.id).vote_offloaded_at)
+                self.assertIn('test: offloaded 1 votes, kept 0', self._offload_command('--allow-local-storage'))
 
 class BallotGroupMembershipTests(TestCase):
     """
