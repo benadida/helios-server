@@ -13,6 +13,7 @@ import uuid
 
 import nh3
 from django.conf import settings
+from django.core.files.storage import storages
 from django.db import models, transaction
 from django.db.models import Q
 from django.utils.html import format_html, format_html_join
@@ -1165,8 +1166,9 @@ class CastVote(HeliosModel):
   # the reference to the voter provides the voter_uuid
   voter = models.ForeignKey(Voter, on_delete=models.CASCADE)
 
-  # the actual encrypted vote
-  vote = LDObjectField(type_hint = 'legacy/EncryptedVote')
+  # the actual encrypted vote, null once offloaded to ballot storage
+  vote = LDObjectField(type_hint = 'legacy/EncryptedVote', null=True)
+  vote_offloaded_at = models.DateTimeField(null=True)
 
   # cache the hash of the vote
   vote_hash = models.CharField(max_length=100, db_index=True)
@@ -1240,6 +1242,22 @@ class CastVote(HeliosModel):
   @classmethod
   def get_by_voter(cls, voter):
     return cls.objects.filter(voter = voter).order_by('-cast_at')
+
+  @property
+  def vote_storage_name(self):
+    return "cast_votes/%s/%s.json" % (self.voter.election.uuid, self.id)
+
+  def load_vote(self):
+    """
+    the encrypted vote, fetched from ballot storage if it was offloaded
+    """
+    if self.vote is None and self.vote_offloaded_at:
+      with storages['ballots'].open(self.vote_storage_name) as f:
+        vote_json = f.read().decode('utf-8')
+      if hash_b64(vote_json) != self.vote_hash:
+        raise Exception("offloaded vote %s does not match its fingerprint" % self.vote_storage_name)
+      self.vote = CastVote._meta.get_field('vote').from_db_value(vote_json)
+    return self.vote
 
   def verify_and_store(self):
     # if it's quarantined, don't let this go through

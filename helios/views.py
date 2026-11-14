@@ -139,7 +139,7 @@ def election_vote_shortcut(request, election_short_name):
 
 @election_view()
 def _castvote_shortcut_by_election(request, election, cast_vote):
-  return render_template(request, 'castvote', {'cast_vote' : cast_vote, 'vote_content': cast_vote.vote.toJSON(), 'the_voter': cast_vote.voter, 'election': election})
+  return render_template(request, 'castvote', {'cast_vote' : cast_vote, 'vote_content': cast_vote.load_vote().toJSON(), 'the_voter': cast_vote.voter, 'election': election})
   
 def castvote_shortcut(request, vote_tinyhash):
   try:
@@ -1899,8 +1899,10 @@ def voter_votes(request, election, voter_uuid):
   all cast votes by a voter
   """
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
-  votes = CastVote.get_by_voter(voter)
-  return [v.toJSONDict()  for v in votes]
+  votes = list(CastVote.get_by_voter(voter))
+  for v in votes:
+    v.load_vote()
+  return [v.toJSONDict() for v in votes]
 
 @election_view()
 @return_json
@@ -1909,7 +1911,9 @@ def voter_last_vote(request, election, voter_uuid):
   all cast votes by a voter
   """
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
-  return voter.last_cast_vote().toJSONDict()
+  cast_vote = voter.last_cast_vote()
+  cast_vote.load_vote()
+  return cast_vote.toJSONDict()
 
 ##
 ## cast ballots

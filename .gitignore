@@ -8,3 +8,4 @@ venv*
 env.sh
 .cache
 .idea/
+ballot-storage/

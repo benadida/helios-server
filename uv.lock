@@ -213,6 +213,23 @@ wheels = [
 ]
 
 [[package]]
+name = "django-storages"
+version = "1.14.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ff/d6/2e50e378fff0408d558f36c4acffc090f9a641fd6e084af9e54d45307efa/django_storages-1.14.6.tar.gz", hash = "sha256:7a25ce8f4214f69ac9c7ce87e2603887f7ae99326c316bc8d2d75375e09341c9", size = 87587, upload-time = "2025-04-02T02:34:55.103Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1f/21/3cedee63417bc5553eed0c204be478071c9ab208e5e259e97287590194f1/django_storages-1.14.6-py3-none-any.whl", hash = "sha256:11b7b6200e1cb5ffcd9962bd3673a39c7d6a6109e8096f0e03d46fab3d3aabd9", size = 33095, upload-time = "2025-04-02T02:34:53.291Z" },
+]
+
+[package.optional-dependencies]
+s3 = [
+    { name = "boto3" },
+]
+
+[[package]]
 name = "django-stubs-ext"
 version = "6.1.2"
 source = { registry = "https://pypi.org/simple" }
@@ -321,6 +338,7 @@ dependencies = [
     { name = "django-csp" },
     { name = "django-picklefield" },
     { name = "django-ses" },
+    { name = "django-storages", extra = ["s3"] },
     { name = "django-tasks" },
     { name = "django-tasks-db", extra = ["compat"] },
     { name = "django-webtest" },
@@ -354,6 +372,7 @@ requires-dist = [
     { name = "django-csp", specifier = "==3.8" },
     { name = "django-picklefield", specifier = "==3.2" },
     { name = "django-ses", specifier = "==4.1.0" },
+    { name = "django-storages", extras = ["s3"], specifier = "==1.14.6" },
     { name = "django-tasks", specifier = "==0.12.0" },
     { name = "django-tasks-db", extras = ["compat"], specifier = "==0.13.0" },
     { name = "django-webtest", specifier = ">=1.9.11" },

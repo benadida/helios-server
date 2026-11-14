@@ -3,6 +3,7 @@ Unit Tests for Helios
 """
 
 import datetime
+import json
 import logging
 import random as stdlib_random
 import re
@@ -16,6 +17,8 @@ import django_webtest
 from django.conf import settings
 from django.core import mail
 from django.core.files import File
+from django.core.files.base import ContentFile
+from django.core.files.storage import storages
 from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
@@ -836,6 +839,54 @@ class VoterCastVoteTests(TestCase):
     def test_delete_cast_vote_unlinks_voter(self):
         self.cast_vote.delete()
         self.assertIsNone(self._voter().cast_vote_id)
+
+
+class OffloadedCastVoteTests(TestCase):
+    fixtures = ['users.json', 'election.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.election = models.Election.objects.get(short_name='test')
+        self.election.public_key = views.ELGAMAL_PARAMS.generate_keypair().pk
+        self.election.save()
+        user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.voter = models.Voter.register_user_in_election(user, self.election)
+
+        vote = homomorphic.EncryptedVote.fromElectionAndAnswers(self.election, [[0]])
+        self.vote_json = datatypes.LDObject.instantiate(vote, datatype='legacy/EncryptedVote').serialize()
+        # the booth fingerprints compact JSON, not the spaced JSON stored in the DB
+        self.booth_json = json.dumps(utils.from_json(self.vote_json), sort_keys=True, separators=(',', ':'))
+        self.cast_vote = models.CastVote.objects.create(voter=self.voter, vote=vote, vote_hash=crypto_utils.hash_b64(self.booth_json), cast_at=timezone.now())
+        self.voter.store_vote(self.cast_vote)
+
+    def _offload(self, content=None):
+        storages['ballots'].save(self.cast_vote.vote_storage_name, ContentFile((content or self.booth_json).encode('utf-8')))
+        models.CastVote.objects.filter(id=self.cast_vote.id).update(vote=None, vote_offloaded_at=timezone.now())
+        models.Voter.objects.filter(id=self.voter.id).update(vote=None)
+
+    def test_load_offloaded_vote(self):
+        self._offload()
+        cast_vote = models.CastVote.objects.get(id=self.cast_vote.id)
+        self.assertIsNone(cast_vote.vote)
+        self.assertEqual(cast_vote.load_vote().toJSON(), self.vote_json)
+        self.assertEqual(models.Voter.objects.get(id=self.voter.id).last_cast_vote().load_vote().toJSON(), self.vote_json)
+        self.assertEqual(self.election.num_cast_votes, 1)
+
+    def test_offloaded_vote_urls(self):
+        self._offload()
+        vote = utils.from_json(self.vote_json)
+        base = "/helios/elections/%s/ballots/%s" % (self.election.uuid, self.voter.uuid)
+        self.assertEqual(self.client.get(base + "/last").json()['vote'], vote)
+        self.assertEqual([v['vote'] for v in self.client.get(base + "/all").json()], [vote])
+        response = self.client.get("/helios/v/%s" % self.cast_vote.vote_tinyhash)
+        self.assertContains(response, html_escape(self.vote_json))
+
+    def test_offloaded_vote_must_match_fingerprint(self):
+        vote = homomorphic.EncryptedVote.fromElectionAndAnswers(self.election, [[1]])
+        self._offload(datatypes.LDObject.instantiate(vote, datatype='legacy/EncryptedVote').serialize())
+        with self.assertRaises(Exception):
+            models.CastVote.objects.get(id=self.cast_vote.id).load_vote()
+
 
 class BallotGroupMembershipTests(TestCase):
     """

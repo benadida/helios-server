@@ -235,6 +235,34 @@ MEDIA_ROOT = ROOT_PATH + "media/"
 # a relative path where voter upload files are stored
 VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
 
+# offloaded cast-vote JSON lives in the "ballots" storage: an S3-compatible
+# bucket if configured (for Cloudflare R2, set the endpoint URL and region "auto")
+BALLOT_STORAGE_BUCKET = get_from_env('BALLOT_STORAGE_BUCKET', None)
+if TESTING:
+    BALLOT_STORAGE = {"BACKEND": "django.core.files.storage.InMemoryStorage"}
+elif BALLOT_STORAGE_BUCKET:
+    BALLOT_STORAGE = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "bucket_name": BALLOT_STORAGE_BUCKET,
+            "endpoint_url": get_from_env('BALLOT_STORAGE_ENDPOINT_URL', None),
+            "region_name": get_from_env('BALLOT_STORAGE_REGION', None),
+            "access_key": get_from_env('BALLOT_STORAGE_ACCESS_KEY_ID', None),
+            "secret_key": get_from_env('BALLOT_STORAGE_SECRET_ACCESS_KEY', None),
+        },
+    }
+else:
+    BALLOT_STORAGE = {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {"location": os.path.join(ROOT_PATH, "ballot-storage")},
+    }
+
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    "ballots": BALLOT_STORAGE,
+}
+
 
 # Change your email settings
 DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'ben@adida.net')
