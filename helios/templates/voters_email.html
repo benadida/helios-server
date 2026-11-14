@@ -24,7 +24,7 @@ voter_id = '{{voter.voter_id}}';
 {% if template_option.0 == template %}
 <b>{{template_option.1}}</b>
 {% else %}
-<a href="?template={{template_option.0}}&voter_id={{voter.voter_login_id}}">{{template_option.1}}</a>
+<a href="?template={{template_option.0}}&voter_id={{voter.voter_login_id|urlencode}}">{{template_option.1}}</a>
 {% endif %}
 &nbsp;&nbsp;&nbsp;
 {% endfor %}
