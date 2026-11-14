@@ -623,13 +623,17 @@ class ReturnUrlTests(TestCase):
 
 @override_settings(AUTH_ENABLED_SYSTEMS=['password', 'phone'])
 class PhoneAuthTests(TestCase):
+    fixtures = ['users.json', 'election.json']
     NUMBER = '+15551234567'
 
     def setUp(self):
         from . import sms
+        from helios.models import Election, Voter
         self.outbox = sms.outbox
         self.outbox.clear()
         self.user = models.User.objects.create(user_type='phone', user_id=self.NUMBER, name='Ann Lee', info={})
+        self.election = Election.objects.get(short_name='test')
+        self.voter = Voter.register_user_in_election(self.user, self.election)
         # prime the session so it carries a csrf_token
         self.client.get(reverse('auth@phone@login'))
 
@@ -649,6 +653,11 @@ class PhoneAuthTests(TestCase):
         for bad in ['5551234567', '+0123456789', '+1555', 'call me']:
             with self.assertRaises(ValueError):
                 phone.normalize_user_id(bad)
+
+    def test_no_code_once_removed_from_voter_lists(self):
+        self.voter.delete()
+        self.request_code()
+        self.assertEqual(self.outbox, [])
 
     def test_login_with_texted_code(self):
         response = self.request_code()

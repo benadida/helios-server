@@ -66,8 +66,9 @@ def _send_login_code(number):
   text a new code, only to numbers already on a voter list
   """
   with transaction.atomic():
+    from helios.models import Voter
     user = _locked_user(number)
-    if not user:
+    if not user or not Voter.objects.filter(user=user).exists():
       return
 
     info = dict(user.info or {})
