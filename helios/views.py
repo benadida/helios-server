@@ -1270,8 +1270,9 @@ def one_election_questions(request, election):
   return render_template(request, 'election_questions', {'election': election, 'questions_json' : questions_json, 'admin_p': admin_p})
 
 def _check_eligibility(election, user):
-  # prevent password-users from signing up willy-nilly for other elections, doesn't make sense
-  if user.user_type == 'password':
+  # prevent password and phone users from signing up willy-nilly for other elections,
+  # they only work for listed voters, and phone voters need aliases
+  if user.user_type in ('password', 'phone'):
     return False
 
   return election.user_eligible_p(user)

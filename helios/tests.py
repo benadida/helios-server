@@ -4674,6 +4674,14 @@ class PhoneVoterTests(TestCase):
         self.assertIsNotNone(voter.alias)
         self.assertEqual(self.election.voter_auth_systems(), ['phone'])
 
+    def test_phone_users_cannot_self_register(self):
+        from helios import views
+        self.election.openreg = True
+        self.election.eligibility = None
+        self.election.save()
+        user = auth_models.User.objects.create(user_type='phone', user_id='+15551234567', name='x', info={})
+        self.assertFalse(views._check_eligibility(self.election, user))
+
     def test_upload_requires_voter_aliases(self):
         self.election.use_voter_aliases = False
         self.election.save()
