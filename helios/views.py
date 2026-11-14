@@ -1944,10 +1944,10 @@ def ballot_list(request, election):
     if after is None:
       return HttpResponseBadRequest("after must be a timestamp like 2017-10-17 05:08:27.938681")
 
-  voters = Voter.get_by_election(election, cast=True, order_by='cast_at', limit=limit, after=after)
+  voters = Voter.get_by_election(election, cast=True, order_by='cast_at', limit=limit, after=after).defer('vote')
 
-  # we explicitly cast this to a short cast vote
-  return [v.last_cast_vote().ld_object.short.toDict(complete=True) for v in voters]
+  # short cast votes only need the voter's fields, not the vote itself
+  return [CastVote(vote=None, vote_hash=v.vote_hash, cast_at=v.cast_at, voter=v).ld_object.short.toDict(complete=True) for v in voters]
 
 
 ##
