@@ -81,11 +81,11 @@ class UserModelTests(unittest.TestCase):
 
     def test_can_create_election(self):
         """
-        check that auth systems have the can_create_election call and that it's true for the common ones
+        check that auth systems have the can_create_election call and that it's true for all but voter-only phone
         """
         for auth_system, auth_system_module in AUTH_SYSTEMS.items():
             assert(hasattr(auth_system_module, 'can_create_election'))
-            assert(auth_system_module.can_create_election('foobar', {}))
+            self.assertEqual(auth_system_module.can_create_election('foobar', {}), auth_system != 'phone')
 
 
     def test_status_update(self):
@@ -619,3 +619,103 @@ class ReturnUrlTests(TestCase):
             'return_url': 'https://example.com/elsewhere'})
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(response['Location'], '/')
+
+
+@override_settings(AUTH_ENABLED_SYSTEMS=['password', 'phone'])
+class PhoneAuthTests(TestCase):
+    fixtures = ['users.json', 'election.json']
+    NUMBER = '+15551234567'
+
+    def setUp(self):
+        from . import sms
+        from helios.models import Election, Voter
+        self.outbox = sms.outbox
+        self.outbox.clear()
+        self.user = models.User.objects.create(user_type='phone', user_id=self.NUMBER, name='Ann Lee', info={})
+        self.election = Election.objects.get(short_name='test')
+        self.voter = Voter.register_user_in_election(self.user, self.election)
+        # prime the session so it carries a csrf_token
+        self.client.get(reverse('auth@phone@login'))
+
+    def request_code(self, number='+1 (555) 123-4567'):
+        return self.client.post(reverse('auth@phone@login'), {'number': number, 'csrf_token': self.client.session['csrf_token']})
+
+    def enter_code(self, code):
+        return self.client.post(reverse('auth@phone@verify'), {'code': code, 'csrf_token': self.client.session['csrf_token']})
+
+    def sent_code(self):
+        import re
+        return re.search(r'\d{6}', self.outbox[-1]['body']).group(0)
+
+    def test_normalize_user_id(self):
+        from .auth_systems import phone
+        self.assertEqual(phone.normalize_user_id(' +44 20 7946.0958 '), '+442079460958')
+        for bad in ['5551234567', '+0123456789', '+1555', 'call me']:
+            with self.assertRaises(ValueError):
+                phone.normalize_user_id(bad)
+
+    def test_no_code_once_removed_from_voter_lists(self):
+        self.voter.delete()
+        self.request_code()
+        self.assertEqual(self.outbox, [])
+
+    def test_login_with_texted_code(self):
+        response = self.request_code()
+        self.assertRedirects(response, reverse('auth@phone@verify'), fetch_redirect_response=False)
+        self.assertEqual(len(self.outbox), 1)
+        self.assertEqual(self.outbox[0]['to'], self.NUMBER)
+
+        response = self.enter_code(self.sent_code())
+        self.assertRedirects(response, reverse('auth@after'), fetch_redirect_response=False)
+        self.client.get(reverse('auth@after'))
+        self.assertEqual(self.client.session['user']['type'], 'phone')
+        self.assertEqual(self.client.session['user']['user_id'], self.NUMBER)
+
+    def test_code_works_once(self):
+        self.request_code()
+        code = self.sent_code()
+        self.enter_code(code)
+        self.request_code()
+        response = self.enter_code(code)
+        self.assertContains(response, 'Wrong or expired code')
+
+    def test_unlisted_number_gets_same_reply_and_no_text(self):
+        response = self.request_code('+15550000000')
+        self.assertRedirects(response, reverse('auth@phone@verify'), fetch_redirect_response=False)
+        self.assertEqual(self.outbox, [])
+        self.assertContains(self.enter_code('123456'), 'Wrong or expired code')
+
+    def test_too_many_wrong_codes(self):
+        self.request_code()
+        code = self.sent_code()
+        wrong = '000000' if code != '000000' else '111111'
+        for _ in range(5):
+            self.assertContains(self.enter_code(wrong), 'Wrong or expired code')
+        self.assertContains(self.enter_code(code), 'Wrong or expired code')
+
+    def test_expired_code(self):
+        self.request_code()
+        user = models.User.objects.get(pk=self.user.pk)
+        user.info['login_code_sent_at'] -= 601
+        user.save()
+        self.assertContains(self.enter_code(self.sent_code()), 'Wrong or expired code')
+
+    def test_new_code_at_most_once_a_minute(self):
+        self.request_code()
+        self.request_code()
+        self.assertEqual(len(self.outbox), 1)
+
+    def test_bad_number_format(self):
+        self.assertContains(self.request_code('5551234567'), 'international format')
+        self.assertEqual(self.outbox, [])
+
+    @override_settings(AUTH_ENABLED_SYSTEMS=['password'])
+    def test_not_found_when_disabled(self):
+        self.assertEqual(self.client.get(reverse('auth@phone@login')).status_code, 404)
+
+    def test_messages_are_texts(self):
+        self.user.send_message('subject', 'Polls are open.\n')
+        self.assertEqual(self.outbox, [{'to': self.NUMBER, 'body': 'Polls are open.'}])
+
+    def test_cannot_create_elections(self):
+        self.assertFalse(self.user.can_create_election())

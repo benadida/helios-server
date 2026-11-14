@@ -595,12 +595,12 @@ class Election(HeliosModel):
       systems.add('password')
 
     # open registration: whoever the eligibility rules admit can also log in and
-    # register, except with password, which can't self-register
+    # register, except with password or phone, which only work for listed voters
     if self.openreg:
       if self.eligibility:
-        systems.update(e['auth_system'] for e in self.eligibility if e['auth_system'] != 'password')
+        systems.update(e['auth_system'] for e in self.eligibility if e['auth_system'] not in ('password', 'phone'))
       else:
-        systems.update(s for s in settings.AUTH_ENABLED_SYSTEMS if s != 'password')
+        systems.update(s for s in settings.AUTH_ENABLED_SYSTEMS if s not in ('password', 'phone'))
 
     return [s for s in settings.AUTH_ENABLED_SYSTEMS if s in systems]
 
@@ -851,6 +851,10 @@ class VoterFile(models.Model):
 
       if not voter_type in AUTH_SYSTEMS:
         raise Exception("invalid voter type '%s' for voter id '%s', available voter types are %s" % (voter_type, voter_id, ",".join(AUTH_SYSTEMS.keys())))
+      if hasattr(AUTH_SYSTEMS[voter_type], 'normalize_user_id'):
+        voter_id = AUTH_SYSTEMS[voter_type].normalize_user_id(voter_id)
+      if getattr(AUTH_SYSTEMS[voter_type], 'REQUIRES_VOTER_ALIASES', False) and not self.election.use_voter_aliases:
+        raise Exception("%s voters can only be added to an election that uses voter aliases, turn them on in the election settings" % voter_type)
 
       # default to having email be the same as voter_id
       voter_email = voter_id
@@ -923,7 +927,9 @@ class VoterFile(models.Model):
           try:
             user = User.get_by_type_and_id(voter['voter_type'], voter['voter_id'])
           except User.DoesNotExist:
-            user, _ = User.objects.get_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'], defaults = {'name': voter['voter_id'], 'info': {}, 'token': None})
+            auth_system = AUTH_SYSTEMS[voter['voter_type']]
+            name = auth_system.default_name(voter['voter_id']) if hasattr(auth_system, 'default_name') else voter['voter_id']
+            user, _ = User.objects.get_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'], defaults = {'name': name, 'info': {}, 'token': None})
           existing_voter = Voter.get_by_election_and_user(self.election, user)
           if not existing_voter:
               Voter.register_user_in_election(user, self.election)

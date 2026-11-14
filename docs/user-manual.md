@@ -71,7 +71,11 @@ password,priya,priya@example.org,Priya Shah
 The fields are: `password`, a voter ID you choose, the voter's email, and
 their name. Helios creates a password for each voter and emails it to them
 in step 7. To use a login account instead, put the login type and username,
-for example `github,benadida`.
+for example `github,benadida`. If the server has phone login turned on, voters
+can also log in with a code texted to them: put `phone` and their number in
+international format, for example `phone,+15551234567`. Phone voters can only
+be added to an election that uses voter aliases, so that their numbers aren't
+published, and their name shows only the last 4 digits, e.g. `+•••••••4567`.
 
 Check the preview and click **Yes, let's go**.
 
@@ -112,16 +116,17 @@ you set.
 
 ![The election is open](images/manual/election-open.png)
 
-### 7. Email the voters
+### 7. Contact the voters
 
-On the **voters & ballots** page, click **email voters**. The **Time to Vote**
+On the **voters & ballots** page, click **contact voters**. The **Time to Vote**
 template sends each voter the voting link and, for password voters, their
 voter ID and password.
 
 The box at the top is a preview. Helios fills in each voter's details in the
 fields shown in angle brackets. To add your own text, type it in **Body**;
 it appears where `<BODY>` is. Don't paste the preview into it. Choose who to
-send to and click **Send**.
+send to and click **Send**. Phone voters get the message as a text, so use the
+**Short** template for them.
 
 ![Emailing voters](images/manual/email-voters.png)
 

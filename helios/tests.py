@@ -17,7 +17,7 @@ from django.conf import settings
 from django.core import mail
 from django.core.files import File
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from django.utils.html import escape as html_escape
 from django_tasks import TaskResultStatus
@@ -1322,6 +1322,24 @@ class ElectionBlackboxTests(WebTest):
 
         new_election = models.Election.objects.get(uuid = self.election.uuid)
         self.assertEqual(new_election.short_name, self.election.short_name + "-2")
+
+    def test_election_edit_keeps_aliases_for_phone_voters(self):
+        self.election.use_voter_aliases = True
+        self.election.save()
+        user = auth_models.User.objects.create(user_type='phone', user_id='+15551234567', name='+•••••••4567', info={})
+        models.Voter.register_user_in_election(user, self.election)
+
+        self.setup_login(from_scratch=True)
+        response = self.client.post("/helios/elections/%s/edit" % self.election.uuid, {
+                "short_name" : self.election.short_name,
+                "name" : self.election.name,
+                "description" : self.election.description,
+                "election_type" : self.election.election_type,
+                'csrf_token': self.client.session['csrf_token']
+                })
+
+        self.assertContains(response, "need voter aliases")
+        self.assertTrue(models.Election.objects.get(uuid=self.election.uuid).use_voter_aliases)
 
     def test_site_announcement(self):
         self.setup_login(from_scratch=True, user_id='mccio@github.com', user_type='google')
@@ -3247,7 +3265,7 @@ class VoterEmailCutoffViewTests(WebTest):
         self.setup_login()
         response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/list')
         self.assertStatusCode(response, 200)
-        self.assertContains(response, 'email voters')
+        self.assertContains(response, 'contact voters')
         # Should have a link, not a disabled button
         self.assertContains(response, 'href')
 
@@ -3259,7 +3277,7 @@ class VoterEmailCutoffViewTests(WebTest):
         self.setup_login()
         response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/list')
         self.assertStatusCode(response, 200)
-        self.assertContains(response, 'email voters')
+        self.assertContains(response, 'contact voters')
         self.assertContains(response, 'disabled')
         self.assertContains(response, '3 weeks ago')
 
@@ -4629,3 +4647,62 @@ class RequeueStuckTasksTests(TestCase):
         stuck.refresh_from_db()
         self.assertEqual(stuck.status, TaskResultStatus.RUNNING)
         self.assertIn('would requeue 1 tasks', out.getvalue())
+
+
+@override_settings(AUTH_ENABLED_SYSTEMS=['password', 'phone'])
+class PhoneVoterTests(TestCase):
+    fixtures = ['users.json', 'election.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        from helios_auth import sms
+        self.outbox = sms.outbox
+        self.outbox.clear()
+        self.election = models.Election.objects.get(short_name='test')
+        self.election.use_voter_aliases = True
+        self.election.save()
+
+    def test_upload_phone_voters(self):
+        voter_file = models.VoterFile(election=self.election, voter_file_content="phone,+1 555 123-4567,,Ann Lee\n")
+        voter_file.save()
+        voter_file.process()
+
+        voter = self.election.voter_set.get()
+        self.assertEqual(voter.voter_login_id, '+15551234567')
+        self.assertEqual(voter.voter_type, 'phone')
+        self.assertEqual(voter.name, '+•••••••4567')
+        self.assertIsNotNone(voter.alias)
+        self.assertEqual(self.election.voter_auth_systems(), ['phone'])
+
+    def test_phone_users_cannot_self_register(self):
+        from helios import views
+        self.election.openreg = True
+        self.election.eligibility = None
+        self.election.save()
+        user = auth_models.User.objects.create(user_type='phone', user_id='+15551234567', name='x', info={})
+        self.assertFalse(views._check_eligibility(self.election, user))
+
+    def test_upload_requires_voter_aliases(self):
+        self.election.use_voter_aliases = False
+        self.election.save()
+        voter_file = models.VoterFile(election=self.election, voter_file_content="phone,+15551234567\n")
+        with self.assertRaisesRegex(Exception, 'voter aliases'):
+            list(voter_file.itervoters())
+
+    def test_upload_rejects_bad_number(self):
+        voter_file = models.VoterFile(election=self.election, voter_file_content="phone,555 1234\n")
+        with self.assertRaisesRegex(ValueError, 'international format'):
+            list(voter_file.itervoters())
+
+    def test_short_template_is_texted(self):
+        user = auth_models.User.objects.create(user_type='phone', user_id='+15551234567', name='Ann Lee', info={})
+        voter = models.Voter.register_user_in_election(user, self.election)
+
+        tasks.single_voter_email.enqueue(voter_uuid=voter.uuid, subject_template='email/short_subject.txt',
+                                         body_template='email/short_body.txt',
+                                         extra_vars={'custom_subject': 'Vote', 'custom_message': 'Polls close Friday.',
+                                                     'election_vote_url': 'https://example.com/vote'})
+        run_queued_tasks()
+
+        self.assertEqual(self.outbox, [{'to': '+15551234567',
+                                        'body': '%s: Polls close Friday.\nVote at https://example.com/vote' % self.election.name}])

@@ -31,6 +31,10 @@ if 'ldap' in AUTH_ENABLED_SYSTEMS:
     from .auth_systems.ldapauth import urlpatterns as ldap_patterns
     urlpatterns.extend(ldap_patterns)
 
+# phone auth, whose views check that it's enabled
+from .auth_systems.phone import urlpatterns as phone_patterns
+urlpatterns.extend(phone_patterns)
+
 # devlogin (development only)
 if 'devlogin' in AUTH_ENABLED_SYSTEMS:
     from .auth_systems.devlogin import urlpatterns as devlogin_patterns

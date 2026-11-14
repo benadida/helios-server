@@ -249,6 +249,10 @@ def one_election_edit(request, election):
     
     if election_form.is_valid():
       clean_data = election_form.cleaned_data
+      alias_voter_types = [t for t, s in AUTH_SYSTEMS.items() if getattr(s, 'REQUIRES_VOTER_ALIASES', False)]
+      if election.use_voter_aliases and not clean_data['use_voter_aliases'] and election.voter_set.filter(user__user_type__in=alias_voter_types).exists():
+        error = "This election has %s voters, who need voter aliases" % " or ".join(alias_voter_types)
+        return render_template(request, "election_edit", {'election_form' : election_form, 'election' : election, 'error': error})
       for attr_name in RELEVANT_FIELDS:
         setattr(election, attr_name, clean_data[attr_name])
       try:
@@ -1266,8 +1270,9 @@ def one_election_questions(request, election):
   return render_template(request, 'election_questions', {'election': election, 'questions_json' : questions_json, 'admin_p': admin_p})
 
 def _check_eligibility(election, user):
-  # prevent password-users from signing up willy-nilly for other elections, doesn't make sense
-  if user.user_type == 'password':
+  # prevent password and phone users from signing up willy-nilly for other elections,
+  # they only work for listed voters, and phone voters need aliases
+  if user.user_type in ('password', 'phone'):
     return False
 
   return election.user_eligible_p(user)
@@ -1786,7 +1791,8 @@ def voters_email(request, election):
     ('vote', 'Time to Vote'),
     ('simple', 'Simple'),
     ('info', 'Additional Info'),
-    ('result', 'Election Result')
+    ('result', 'Election Result'),
+    ('short', 'Short (for text messages)')
     ]
 
   template = request.GET.get('template', 'vote')

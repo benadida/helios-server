@@ -290,6 +290,12 @@ if DEBUG:
 
 AUTH_DEFAULT_SYSTEM = get_from_env('AUTH_DEFAULT_SYSTEM', get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None))
 
+# text messages, for the phone auth system: 'twilio' sends them, 'console' logs them
+SMS_BACKEND = get_from_env('SMS_BACKEND', 'locmem' if TESTING else 'console')
+TWILIO_ACCOUNT_SID = get_from_env('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN = get_from_env('TWILIO_AUTH_TOKEN', '')
+TWILIO_FROM_NUMBER = get_from_env('TWILIO_FROM_NUMBER', '')
+
 # google
 GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', '')

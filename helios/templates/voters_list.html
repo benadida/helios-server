@@ -39,9 +39,9 @@
 {% if email_voters and election.frozen_at and admin_p %}
 <p>
 {% if can_send_emails %}
-<a class="button" href="{% url "election@voters@email" election.uuid %}">email voters</a>
+<a class="button" href="{% url "election@voters@email" election.uuid %}">contact voters</a>
 {% else %}
-<button class="button" disabled style="opacity: 0.5; cursor: not-allowed;" title="{{email_disabled_reason}}">email voters (disabled: {{email_disabled_reason}})</button>
+<button class="button" disabled style="opacity: 0.5; cursor: not-allowed;" title="{{email_disabled_reason}}">contact voters (disabled: {{email_disabled_reason}})</button>
 {% endif %}
 </p>
 {% endif %}
@@ -156,7 +156,7 @@ Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voter
 <td style="white-space: nowrap;">
 {% if election.frozen_at %}
 {% if can_send_emails %}
-[<a href="{% url "election@voters@email" election.uuid %}?voter_id={{voter.voter_login_id}}">email</a>]
+[<a href="{% url "election@voters@email" election.uuid %}?voter_id={{voter.voter_login_id|urlencode}}">email</a>]
 {% else %}
 [<span style="opacity: 0.5; cursor: not-allowed;" title="{{email_disabled_reason}}">email</span>]
 {% endif %}
