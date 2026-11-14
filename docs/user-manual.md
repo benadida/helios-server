@@ -73,7 +73,9 @@ their name. Helios creates a password for each voter and emails it to them
 in step 7. To use a login account instead, put the login type and username,
 for example `github,benadida`. If the server has phone login turned on, voters
 can also log in with a code texted to them: put `phone` and their number in
-international format, for example `phone,+15551234567`.
+international format, for example `phone,+15551234567`. Phone voters can only
+be added to an election that uses voter aliases, so that their numbers aren't
+published, and their name shows only the last 4 digits, e.g. `+•••••••4567`.
 
 Check the preview and click **Yes, let's go**.
 

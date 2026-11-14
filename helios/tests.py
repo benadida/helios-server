@@ -1323,6 +1323,24 @@ class ElectionBlackboxTests(WebTest):
         new_election = models.Election.objects.get(uuid = self.election.uuid)
         self.assertEqual(new_election.short_name, self.election.short_name + "-2")
 
+    def test_election_edit_keeps_aliases_for_phone_voters(self):
+        self.election.use_voter_aliases = True
+        self.election.save()
+        user = auth_models.User.objects.create(user_type='phone', user_id='+15551234567', name='+•••••••4567', info={})
+        models.Voter.register_user_in_election(user, self.election)
+
+        self.setup_login(from_scratch=True)
+        response = self.client.post("/helios/elections/%s/edit" % self.election.uuid, {
+                "short_name" : self.election.short_name,
+                "name" : self.election.name,
+                "description" : self.election.description,
+                "election_type" : self.election.election_type,
+                'csrf_token': self.client.session['csrf_token']
+                })
+
+        self.assertContains(response, "need voter aliases")
+        self.assertTrue(models.Election.objects.get(uuid=self.election.uuid).use_voter_aliases)
+
     def test_site_announcement(self):
         self.setup_login(from_scratch=True, user_id='mccio@github.com', user_type='google')
         response = self.client.get("/")
@@ -4641,6 +4659,8 @@ class PhoneVoterTests(TestCase):
         self.outbox = sms.outbox
         self.outbox.clear()
         self.election = models.Election.objects.get(short_name='test')
+        self.election.use_voter_aliases = True
+        self.election.save()
 
     def test_upload_phone_voters(self):
         voter_file = models.VoterFile(election=self.election, voter_file_content="phone,+1 555 123-4567,,Ann Lee\n")
@@ -4650,7 +4670,16 @@ class PhoneVoterTests(TestCase):
         voter = self.election.voter_set.get()
         self.assertEqual(voter.voter_login_id, '+15551234567')
         self.assertEqual(voter.voter_type, 'phone')
+        self.assertEqual(voter.name, '+•••••••4567')
+        self.assertIsNotNone(voter.alias)
         self.assertEqual(self.election.voter_auth_systems(), ['phone'])
+
+    def test_upload_requires_voter_aliases(self):
+        self.election.use_voter_aliases = False
+        self.election.save()
+        voter_file = models.VoterFile(election=self.election, voter_file_content="phone,+15551234567\n")
+        with self.assertRaisesRegex(Exception, 'voter aliases'):
+            list(voter_file.itervoters())
 
     def test_upload_rejects_bad_number(self):
         voter_file = models.VoterFile(election=self.election, voter_file_content="phone,555 1234\n")

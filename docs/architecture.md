@@ -196,7 +196,9 @@ than half of the ballots cast.
 - **Password voters** are separate from site accounts. They log in to one
   election with the voter ID and password Helios generated and emailed them.
   The session then records `CURRENT_VOTER_ID`.
-- **Phone voters** have a `phone` site account named by their number. Only
+- **Phone voters** have a `phone` site account whose ID is their number and
+  whose name shows only its last 4 digits. Their elections must use voter
+  aliases (`REQUIRES_VOTER_ALIASES`), so the number isn't published. Only
   numbers already on a voter list can log in, with a one-time code texted to
   them (`helios_auth/auth_systems/phone.py`); their messages are sent as texts
   through `helios_auth/sms.py` (`SMS_BACKEND`, Twilio settings).

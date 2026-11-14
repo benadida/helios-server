@@ -18,6 +18,8 @@ from django.utils.crypto import constant_time_compare, salted_hmac
 from helios_auth import sms, url_names
 
 STATUS_UPDATES = False
+# a voter's ID, here their number, is published as a hash: aliases keep it private
+REQUIRES_VOTER_ALIASES = True
 PHONE_LOGIN_URL_NAME = "auth@phone@login"
 PHONE_VERIFY_URL_NAME = "auth@phone@verify"
 
@@ -35,6 +37,12 @@ def normalize_user_id(value):
   if not re.fullmatch(r'\+[1-9]\d{6,14}', number):
     raise ValueError("invalid phone number '%s', use the international format, e.g. +15551234567" % value)
   return number
+
+def default_name(user_id):
+  """
+  shows only the last 4 digits, e.g. +•••••••4567
+  """
+  return '+' + '•' * (len(user_id) - 5) + user_id[-4:]
 
 class PhoneLoginForm(forms.Form):
   number = forms.CharField(label="Phone number", max_length=30)

@@ -249,6 +249,10 @@ def one_election_edit(request, election):
     
     if election_form.is_valid():
       clean_data = election_form.cleaned_data
+      alias_voter_types = [t for t, s in AUTH_SYSTEMS.items() if getattr(s, 'REQUIRES_VOTER_ALIASES', False)]
+      if election.use_voter_aliases and not clean_data['use_voter_aliases'] and election.voter_set.filter(user__user_type__in=alias_voter_types).exists():
+        error = "This election has %s voters, who need voter aliases" % " or ".join(alias_voter_types)
+        return render_template(request, "election_edit", {'election_form' : election_form, 'election' : election, 'error': error})
       for attr_name in RELEVANT_FIELDS:
         setattr(election, attr_name, clean_data[attr_name])
       try:
