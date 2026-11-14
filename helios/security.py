@@ -44,8 +44,11 @@ def get_voter(request, user, election):
   """
   voter = None
   if 'CURRENT_VOTER_ID' in request.session:
-    voter = Voter.objects.get(id=request.session['CURRENT_VOTER_ID'])
-    if voter.election != election:
+    voter = Voter.objects.filter(id=request.session['CURRENT_VOTER_ID']).first()
+    if voter is None:
+      # the voter was removed after logging in; forget the stale session entry
+      del request.session['CURRENT_VOTER_ID']
+    elif voter.election != election:
       voter = None
 
   if not voter:
