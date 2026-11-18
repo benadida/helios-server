@@ -417,7 +417,14 @@ def new_trustee(request, election):
     # get the public key and the hash, and add it
     name = request.POST['name']
     email = request.POST['email']
-    
+
+    # an election has at most one trustee per email address (unique_together),
+    # so tell the admin rather than failing on the database constraint
+    if Trustee.objects.filter(election = election, email = email).exists():
+      return render_template(request, 'new_trustee', {
+          'election' : election, 'name' : name, 'email' : email,
+          'error' : 'There is already a trustee with that email address for this election.'})
+
     trustee = Trustee(uuid = str(uuid.uuid4()), election = election, name=name, email=email)
     trustee.save()
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_TRUSTEES_VIEW, args=[election.uuid]))

@@ -4637,3 +4637,47 @@ class RequeueStuckTasksTests(TestCase):
         stuck.refresh_from_db()
         self.assertEqual(stuck.status, TaskResultStatus.RUNNING)
         self.assertIn('would requeue 1 tasks', out.getvalue())
+
+
+class NewTrusteeViewTests(WebTest):
+    """Adding a trustee from the admin's trustee page"""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.user = auth_models.User.objects.filter(user_type='google').first()
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-new-trustee',
+            name='Test New Trustee Election',
+            description='Test Election for adding trustees',
+            admin=self.user
+        )
+        if not self.election.uuid:
+            self.election.uuid = str(uuid.uuid4())
+            self.election.save()
+        self.client.get("/")
+        session = self.client.session
+        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
+        session.save()
+        self.url = f'/helios/elections/{self.election.uuid}/trustees/new'
+
+    def _post(self, name, email):
+        return self.client.post(self.url, {
+            'csrf_token': self.client.session['csrf_token'],
+            'name': name,
+            'email': email,
+        })
+
+    def test_new_trustee_is_added(self):
+        response = self._post('Trustee One', 'trustee1@example.com')
+        self.assertStatusCode(response, 302)
+        self.assertEqual(models.Trustee.objects.filter(election=self.election, email='trustee1@example.com').count(), 1)
+
+    def test_duplicate_trustee_email_shows_error_instead_of_500(self):
+        self._post('Trustee One', 'trustee1@example.com')
+        # submitting the same email again (e.g. a double-click or retry) used to raise IntegrityError
+        response = self._post('Trustee One Again', 'trustee1@example.com')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'There is already a trustee with that email address')
+        self.assertContains(response, 'value="Trustee One Again"')
+        self.assertEqual(models.Trustee.objects.filter(election=self.election, email='trustee1@example.com').count(), 1)
