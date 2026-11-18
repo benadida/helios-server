@@ -3172,6 +3172,14 @@ class VoterEmailCutoffViewTests(WebTest):
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'Email')
 
+    def test_voters_email_accessible_with_no_voters(self):
+        """An election with no voters yet used to 500 building the preview (IndexError)"""
+        self.voter.delete()
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/email')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Email')
+
     def test_voters_email_preview_is_escaped(self):
         """The plain-text preview is shown escaped, placeholders and all"""
         self.election.name = 'Board <b>election</b>'

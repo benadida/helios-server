@@ -1805,6 +1805,9 @@ def voters_email(request, election):
   election_url = get_election_url(election)
   election_vote_url = get_election_govote_url(election)
 
+  # the preview shows how a voter logs in; the election may have no voters yet
+  sample_voter = voter or election.voter_set.first()
+
   default_subject = render_text_template('email/%s_subject.txt' % template, {
       'custom_subject': "<SUBJECT>"
 })
@@ -1818,7 +1821,7 @@ def voters_email(request, election):
                 'name': '<VOTER_NAME>',
                 'voter_login_id': '<VOTER_LOGIN_ID>',
                 'voter_password': '<VOTER_PASSWORD>',
-                'voter_type' : election.voter_set.all()[0].voter_type,
+                'voter_type' : sample_voter.voter_type if sample_voter else None,
                 'election' : election}
       })
 
