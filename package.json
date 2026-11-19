@@ -1,0 +1,8 @@
+{
+  "name": "helios-server",
+  "private": true,
+  "description": "Build wrapper for Heroku Node.js buildpack",
+  "scripts": {
+    "heroku-postbuild": "cd heliosbooth2026 && npm install && npm run build"
+  }
+}

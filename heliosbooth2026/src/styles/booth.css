@@ -1,0 +1,261 @@
+/* Helios Booth 2026 - Base Styles */
+
+:root {
+  --color-primary: #1a73e8;
+  --color-primary-dark: #1557b0;
+  --color-background: #fff;
+  --color-surface: #f5f5f5;
+  --color-border: #ddd;
+  --color-text: #333;
+  --color-text-secondary: #666;
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-error: #dc3545;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --border-radius: 4px;
+  --max-width: 800px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus visible for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Remove default focus for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Utility classes */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Button styles */
+button,
+.button {
+  display: inline-block;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-family: inherit;
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  color: #fff;
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  min-height: 44px; /* Touch target size */
+  min-width: 44px;
+}
+
+button:hover,
+.button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+button:active,
+.button:active {
+  transform: scale(0.98);
+}
+
+button:disabled,
+.button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+button:focus-visible,
+.button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Secondary button style */
+button.secondary,
+.button.secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+button.secondary:hover,
+.button.secondary:hover {
+  background-color: var(--color-surface);
+}
+
+button.secondary:disabled,
+.button.secondary:disabled {
+  color: #999;
+  border-color: #ccc;
+  background-color: transparent;
+}
+
+/* Link styles */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Form elements */
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+textarea {
+  font-family: monospace;
+  font-size: var(--font-size-sm);
+}
+
+/* Responsive breakpoints */
+@media (max-width: 600px) {
+  :root {
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+  }
+
+  button,
+  .button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  button,
+  .button {
+    display: none;
+  }
+}
+
+/* Submit screen (light DOM component - styles can't use Shadow DOM adoptedStyleSheets) */
+submit-screen {
+  display: block;
+}
+
+submit-screen h2 {
+  margin-top: 0;
+}
+
+submit-screen .info-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+submit-screen .info-section p {
+  margin: var(--spacing-sm) 0;
+}
+
+submit-screen .tracker-section {
+  background-color: var(--color-surface);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-lg);
+}
+
+submit-screen .tracker-hash {
+  font-family: monospace;
+  font-size: 1.1rem;
+  word-break: break-all;
+}
+
+submit-screen .cast-url {
+  font-family: monospace;
+  font-size: 1.1rem;
+  word-break: break-all;
+  background-color: var(--color-surface);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius);
+}
+
+submit-screen .submit-form {
+  margin-top: var(--spacing-lg);
+}
+
+submit-screen .encrypted-vote-input {
+  display: none;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: #000;
+    --color-text-secondary: #000;
+  }
+
+  button,
+  .button {
+    border: 2px solid currentColor;
+  }
+}

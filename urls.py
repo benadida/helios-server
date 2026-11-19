@@ -10,6 +10,11 @@ urlpatterns = [
 
     # SHOULD BE REPLACED BY APACHE STATIC PATH
     re_path(r'booth/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosbooth'}),
+    # New Lit-based booth — serves built files from dist/
+    # Run `cd heliosbooth2026 && npm run build` first (copies lib/ into dist/ automatically)
+    # For development with hot-reload, use `npm run dev` in heliosbooth2026/ instead
+    re_path(r'booth2026/$', serve, {'document_root' : settings.ROOT_PATH + '/heliosbooth2026/dist', 'path': 'index.html'}),
+    re_path(r'booth2026/(?P<path>.+)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosbooth2026/dist'}),
     re_path(r'verifier/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosverifier'}),
 
     re_path(r'static/auth/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/helios_auth/media'}),
