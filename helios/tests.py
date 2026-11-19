@@ -3609,6 +3609,71 @@ class PasswordResendTests(WebTest):
         self.assertEqual(len(mail.outbox), num_messages_before)
 
 
+class ComputeTallyTests(TestCase):
+    """
+    compute_tally must give the same encrypted tally whether voters are loaded
+    all at once or streamed from the database, and must stream them
+    """
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    QUESTIONS = [
+        {"answer_urls": [None, None, None], "answers": ["a", "b", "c"], "choice_type": "approval", "max": 2, "min": 0,
+         "question": "q1?", "result_type": "absolute", "short_name": "q1", "tally_type": "homomorphic"},
+        {"answer_urls": [None, None], "answers": ["yes", "no"], "choice_type": "approval", "max": 1, "min": 1,
+         "question": "q2?", "result_type": "absolute", "short_name": "q2", "tally_type": "homomorphic"},
+    ]
+    ANSWERS = [[[0, 1], [0]], [[2], [1]], [[], [0]], [[1, 2], [1]], [[0], [0]]]
+
+    def setUp(self):
+        user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-compute-tally', name='Test Compute Tally',
+            description='Test Compute Tally', admin=user)
+        self.election.questions = self.QUESTIONS
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+        self.election.openreg = True
+        self.election.freeze()
+
+        for i, answers in enumerate(self.ANSWERS):
+            voter = models.Voter.objects.create(
+                uuid=str(uuid.uuid4()), election=self.election, voter_email='v%d@example.com' % i,
+                voter_name='Voter %d' % i, voter_login_id='voter%d' % i)
+            voter.vote = homomorphic.EncryptedVote.fromElectionAndAnswers(self.election, answers)
+            voter.vote_hash = 'hash-%d' % i
+            voter.save()
+
+        # a voter who has not voted must not be tallied
+        models.Voter.objects.create(
+            uuid=str(uuid.uuid4()), election=self.election, voter_email='none@example.com',
+            voter_name='No Vote', voter_login_id='novote')
+
+    def tally_ciphertexts(self, tally):
+        return [[(c.alpha, c.beta) for c in question] for question in tally.tally]
+
+    def test_compute_tally_matches_loading_all_voters(self):
+        # reference: the tally computed by loading every voter into memory first
+        expected = self.election.init_tally()
+        for voter in list(self.election.voter_set.exclude(vote=None)):
+            expected.add_vote(voter.vote, verify_p=False)
+
+        self.election.compute_tally()
+        self.election.refresh_from_db()
+
+        self.assertEqual(self.election.encrypted_tally.num_tallied, len(self.ANSWERS))
+        self.assertEqual(self.election.encrypted_tally.num_tallied, expected.num_tallied)
+        self.assertEqual(self.tally_ciphertexts(self.election.encrypted_tally), self.tally_ciphertexts(expected))
+
+    def test_compute_tally_streams_voters(self):
+        # iterator() keeps Django from caching every voter (and ballot) in memory
+        original = models.models.QuerySet.iterator
+        with mock.patch.object(models.models.QuerySet, 'iterator', autospec=True, side_effect=original) as iterator:
+            self.election.compute_tally()
+
+        self.assertTrue(iterator.called)
+        self.assertTrue(all('chunk_size' in call.kwargs for call in iterator.call_args_list))
+
+
 class PendingVotesTests(TestCase):
     """Tests for pending votes detection and tabulation blocking"""
     fixtures = ['users.json']
