@@ -2058,13 +2058,14 @@ def optout_success(request):
     })
 
 
-@require_http_methods(["GET", "POST"])
+@require_http_methods(["GET", "HEAD", "POST"])
 def optout_confirm(request, email, code):
     """Confirm opt-out with HMAC verification"""
     if not utils.verify_email_confirmation_code(email, 'optout', code):
         raise Http404("Invalid confirmation link")
 
-    if request.method == "GET":
+    # HEAD (sent by mail link scanners on the emailed link) is answered like GET
+    if request.method in ("GET", "HEAD"):
         # Show confirmation form
         return render_template(request, 'optout_confirm_form', {
             'action': 'optout',
@@ -2170,13 +2171,14 @@ def optin_success(request):
     })
 
 
-@require_http_methods(["GET", "POST"])
+@require_http_methods(["GET", "HEAD", "POST"])
 def optin_confirm(request, email, code):
     """Confirm opt-in with HMAC verification"""
     if not utils.verify_email_confirmation_code(email, 'optin', code):
         raise Http404("Invalid confirmation link")
 
-    if request.method == "GET":
+    # HEAD (sent by mail link scanners on the emailed link) is answered like GET
+    if request.method in ("GET", "HEAD"):
         # Check if email is actually opted out before showing the form
         if not EmailOptOut.is_opted_out(email):
             return render_template(request, 'optout_not_opted_out', {'email': email})

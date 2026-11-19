@@ -2281,6 +2281,24 @@ class EmailOptOutViewTests(WebTest):
         # Now email should be opted out
         self.assertTrue(models.EmailOptOut.is_opted_out(email))
 
+    def test_confirm_links_answer_head_without_acting(self):
+        """Mail link scanners send HEAD on the emailed links; answer like GET, change nothing"""
+        email = 'test@example.com'
+
+        optout_code = utils.generate_email_confirmation_code(email, 'optout')
+        response = self.client.head(f'/optout/confirm/{email}/{optout_code}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(models.EmailOptOut.is_opted_out(email))
+
+        models.EmailOptOut.add_opt_out(email)
+        optin_code = utils.generate_email_confirmation_code(email, 'optin')
+        response = self.client.head(f'/optin/confirm/{email}/{optin_code}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(models.EmailOptOut.is_opted_out(email))
+
+        response = self.client.head(f'/optout/confirm/{email}/invalidcode/')
+        self.assertEqual(response.status_code, 404)
+
     def test_optout_confirm_with_invalid_code(self):
         """Test opt-out confirmation with invalid HMAC code"""
         email = 'test@example.com'
