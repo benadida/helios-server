@@ -1183,6 +1183,20 @@ class ElectionBlackboxTests(WebTest):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response['location'].endswith("/helios/elections/%s/voters/list" % self.election.uuid))
 
+    def test_private_election_view_with_deleted_session_voter(self):
+        # a voter logs in, then the admin removes them; their session still
+        # holds the old voter id, which used to raise Voter.DoesNotExist (500)
+        self.election.private_p = True
+        self.election.save()
+        self.client.get("/")
+        session = self.client.session
+        session['CURRENT_VOTER_ID'] = 987654321
+        session.save()
+        response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("password_voter_login", response['location'])
+        self.assertNotIn('CURRENT_VOTER_ID', self.client.session)
+
     def test_election_params(self):
         response = self.client.get("/helios/elections/params")
         self.assertEqual(response.content, views.ELGAMAL_PARAMS_LD_OBJECT.serialize().encode('utf-8'))
