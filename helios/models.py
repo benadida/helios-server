@@ -1162,7 +1162,9 @@ class CastVote(HeliosModel):
   # a tiny version of the hash to enable short URLs
   vote_tinyhash = models.CharField(max_length=50, null=True, unique=True)
 
-  cast_at = models.DateTimeField(auto_now_add=True)
+  # time the server received the ballot (see one_election_cast), in UTC, not when
+  # it was confirmed; auto_now_add would overwrite the value the view assigns
+  cast_at = models.DateTimeField(default=datetime.datetime.utcnow)
 
   # some ballots can be quarantined (this is not the same thing as provisional)
   quarantined_p = models.BooleanField(default=False, null=False)
