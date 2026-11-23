@@ -974,6 +974,14 @@ def one_election_cast_confirm(request, election):
       _forget_pending_vote(request)
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
 
+    # a ballot received before the one already on file for this voter doesn't replace
+    # it, however late its confirmation arrives.
+    # No try/except: if the comparison fails, the request fails and nothing is saved.
+    if voter.cast_at and cast_vote.cast_at <= voter.cast_at:
+      # discard the pending vote so it can't be retried, and tell the voter why
+      _forget_pending_vote(request)
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_rejected, args=[election.uuid]))
+
     # status update?
     if request.POST.get('status_update', False):
       status_update_message = request.POST.get('status_update_message')
@@ -1035,6 +1043,26 @@ def one_election_cast_done(request, election):
   # include_user is set to False if logout is happening
   return render_template(request, 'cast_done', {'election': election,
                                                 'vote_hash': vote_hash, 'logout': logout},
+                         include_user=(not logout))
+
+@election_view()
+def one_election_cast_rejected(request, election):
+  """
+  Shown when a ballot is rejected because it was received before
+  the ballot already recorded for this voter.
+  """
+  user = get_user(request)
+  voter = get_voter(request, user, election)
+
+  # same logout as one_election_cast_done: a rejection must not leave the session open
+  logout = False
+  if voter:
+    if voter.user == user and voter.user is not None:
+      logout = settings.LOGOUT_ON_CONFIRMATION
+    else:
+      request.session.pop('CURRENT_VOTER_ID', None)
+
+  return render_template(request, 'cast_rejected', {'election': election, 'logout': logout},
                          include_user=(not logout))
 
 @election_view()

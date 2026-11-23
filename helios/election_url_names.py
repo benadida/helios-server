@@ -49,6 +49,7 @@ ELECTION_CAST_CONFIRM="election@cast-confirm"
 ELECTION_PASSWORD_VOTER_LOGIN="election@password-voter-login"
 ELECTION_PASSWORD_VOTER_RESEND="election@password-voter-resend"
 ELECTION_CAST_DONE="election@cast-done"
+ELECTION_CAST_REJECTED="election@cast-rejected"
 
 ELECTION_POST_AUDITED_BALLOT="election@post-audited-ballot"
 

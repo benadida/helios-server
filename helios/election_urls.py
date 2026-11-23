@@ -84,6 +84,7 @@ urlpatterns = [
     path('/password_voter_login', views.password_voter_login, name=names.ELECTION_PASSWORD_VOTER_LOGIN),
     path('/password_voter_resend', views.password_voter_resend, name=names.ELECTION_PASSWORD_VOTER_RESEND),
     path('/cast_done', views.one_election_cast_done, name=names.ELECTION_CAST_DONE),
+    path('/cast_rejected', views.one_election_cast_rejected, name=names.ELECTION_CAST_REJECTED),
     
     # post audited ballot
     re_path(r'^/post-audited-ballot', views.post_audited_ballot, name=names.ELECTION_POST_AUDITED_BALLOT),
