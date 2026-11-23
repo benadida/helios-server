@@ -925,6 +925,12 @@ class VoterFile(models.Model):
           except User.DoesNotExist:
             user, _ = User.objects.get_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'], defaults = {'name': voter['voter_id'], 'info': {}, 'token': None})
           existing_voter = Voter.get_by_election_and_user(self.election, user)
+          # a voter of another type (e.g. a password voter, or a user of another
+          # auth system with the same username) may already hold this login ID;
+          # (election, voter_login_id) is unique, so registering would fail the
+          # whole upload partway through
+          if not existing_voter:
+              existing_voter = Voter.get_by_election_and_voter_id(self.election, user.user_id)
           if not existing_voter:
               Voter.register_user_in_election(user, self.election)
               successful_voters += 1
