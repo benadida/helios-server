@@ -228,6 +228,21 @@ class ElectionModelTests(TestCase):
         self.assertEqual(models.VoterFile.objects.get(id=vf.id).num_voters, 2)
         self.assertEqual(vf.num_skipped, 2)
 
+    def test_add_voters_file_skips_login_id_taken_by_another_voter_type(self):
+        # a password voter already holds the login ID a GitHub row would get: the
+        # row is skipped instead of failing the upload on the unique constraint
+        models.VoterFile.objects.create(election=self.election,
+            voter_file_content="password,voter1,v1@example.com,Voter One\n").process()
+        vf = models.VoterFile.objects.create(election=self.election,
+            voter_file_content="github,voter1\ngithub,voter2\n")
+        added = vf.process()
+
+        self.assertEqual(added, 1)
+        self.assertEqual(vf.num_skipped, 1)
+        self.assertIsNotNone(models.VoterFile.objects.get(id=vf.id).processing_finished_at)
+        self.assertIsNone(self.election.voter_set.get(voter_login_id='voter1').user)
+        self.assertEqual(self.election.voter_set.get(voter_login_id='voter2').user.user_type, 'github')
+
     def test_voter_file_process_task_skips_processed_file(self):
         # a requeued task must not reprocess the file and reset its counts to zero
         vf = models.VoterFile.objects.create(election=self.election, voter_file_content='password,v1,v1@example.com,Voter One\n')
