@@ -529,6 +529,46 @@ class OAuthAuthSystemTests(TestCase):
             result = system.get_user_info_after_auth(request)
             self.assertIsNone(result)
 
+    def test_google_login_callback_calls_use_a_timeout(self):
+        """A slow Google response shouldn't hold the worker until the router times out"""
+        from unittest import mock
+        from django.test import RequestFactory
+        from .auth_systems import google
+
+        request = RequestFactory().get('/auth/after/', {'code': 'test_code', 'state': 's'})
+        request.session = {'google-oauth-state': 's', 'google-redirect-url': 'http://example.com/callback'}
+
+        flow = mock.Mock()
+        flow.credentials.token = 'token'
+        userinfo = mock.Mock()
+        userinfo.json.return_value = {'email': 'voter@example.com', 'email_verified': True, 'name': 'Voter'}
+        with mock.patch.object(google, 'get_flow', return_value=flow), \
+             mock.patch.object(google.requests, 'get', return_value=userinfo) as get:
+            user = google.get_user_info_after_auth(request)
+
+        self.assertEqual(user['user_id'], 'voter@example.com')
+        self.assertEqual(flow.fetch_token.call_args.kwargs['timeout'], google.GOOGLE_REQUEST_TIMEOUT)
+        self.assertEqual(get.call_args.kwargs['timeout'], google.GOOGLE_REQUEST_TIMEOUT)
+
+    def test_google_userinfo_timeout_shows_login_failed_page(self):
+        from unittest import mock
+        from .auth_systems import google
+        import requests
+
+        session = self.client.session
+        session['auth_system_name'] = 'google'
+        session['google-oauth-state'] = 's'
+        session['google-redirect-url'] = 'http://example.com/callback'
+        session.save()
+
+        flow = mock.Mock()
+        flow.credentials.token = 'token'
+        with mock.patch.object(google, 'get_flow', return_value=flow), \
+             mock.patch.object(google.requests, 'get', side_effect=requests.Timeout()), \
+             self.assertLogs('helios_auth.views', level='WARNING'):
+            response = self.client.get('/auth/after/', {'code': 'test_code', 'state': 's'})
+        self.assertEqual(response.status_code, 400)
+
     def test_send_message_skips_user_without_email(self):
         """Voters uploaded by username have no email until they log in; don't crash on them"""
         from .auth_systems import github, gitlab

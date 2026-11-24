@@ -13,6 +13,11 @@ from helios_auth.utils import AuthenticationError, format_recipient
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False
 
+# how long to wait on each call to Google during the login callback. Without a
+# limit, a slow Google response holds the web worker until Heroku's 30s router
+# timeout (H12); with one, the user gets the "login failed, try again" page.
+GOOGLE_REQUEST_TIMEOUT = 10
+
 # display tweaks
 LOGIN_MESSAGE = "Log in with my Google Account"
 
@@ -61,7 +66,7 @@ def get_user_info_after_auth(request):
   flow = get_flow(redirect_url)
 
   # Exchange the authorization code for credentials
-  flow.fetch_token(code=request.GET['code'])
+  flow.fetch_token(code=request.GET['code'], timeout=GOOGLE_REQUEST_TIMEOUT)
   credentials = flow.credentials
 
   # Verify the ID token and get user info
@@ -70,7 +75,8 @@ def get_user_info_after_auth(request):
   try:
     userinfo_response = requests.get(
       'https://www.googleapis.com/oauth2/v3/userinfo',
-      headers=headers
+      headers=headers,
+      timeout=GOOGLE_REQUEST_TIMEOUT,
     )
     userinfo_response.raise_for_status()
   except requests.RequestException as e:
