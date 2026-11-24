@@ -972,7 +972,7 @@ def one_election_cast_confirm(request, election):
     # it can't be confirmed (this fails closed): the voter has to cast it again
     if received_at is None:
       _forget_pending_vote(request)
-      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_rejected, args=[election.uuid]) + '?reason=no_reception_time')
 
     # a ballot received before the one already on file for this voter doesn't replace
     # it, however late its confirmation arrives.
@@ -1049,7 +1049,8 @@ def one_election_cast_done(request, election):
 def one_election_cast_rejected(request, election):
   """
   Shown when a ballot is rejected because it was received before
-  the ballot already recorded for this voter.
+  the ballot already recorded for this voter, or because the time it
+  was received is missing.
   """
   user = get_user(request)
   voter = get_voter(request, user, election)
@@ -1062,7 +1063,10 @@ def one_election_cast_rejected(request, election):
     else:
       request.session.pop('CURRENT_VOTER_ID', None)
 
-  return render_template(request, 'cast_rejected', {'election': election, 'logout': logout},
+  missing_reception_time = (request.GET.get('reason') == 'no_reception_time')
+
+  return render_template(request, 'cast_rejected', {'election': election, 'logout': logout,
+                                                    'missing_reception_time': missing_reception_time},
                          include_user=(not logout))
 
 @election_view()
