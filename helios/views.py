@@ -698,9 +698,22 @@ def one_election_cast(request, election):
   user = get_user(request)
   encrypted_vote = request.POST['encrypted_vote']
 
+  # remember when the server received this ballot: that time, not the confirmation,
+  # orders it against the voter's other ballots (see one_election_cast_confirm).
+  # Sending the same ballot again in this session keeps the first time.
+  if request.session.get('encrypted_vote') != encrypted_vote or not request.session.get('encrypted_vote_received_at'):
+    save_in_session_across_logouts(request, 'encrypted_vote_received_at', datetime.datetime.utcnow().isoformat())
+
   save_in_session_across_logouts(request, 'encrypted_vote', encrypted_vote)
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_confirm, args=[election.uuid]))
+
+def _forget_pending_vote(request):
+  """
+  Drop the ballot waiting for confirmation and the time it was received.
+  """
+  request.session.pop('encrypted_vote', None)
+  request.session.pop('encrypted_vote_received_at', None)
 
 def _voter_login_options(request, election, return_url):
   """
@@ -856,6 +869,10 @@ def one_election_cast_confirm(request, election):
   if ('encrypted_vote' not in request.session) or request.session['encrypted_vote'] is None:
     return HttpResponseRedirect(settings.URL_HOST)
 
+  # when the server received the ballot (see one_election_cast)
+  received_at = request.session.get('encrypted_vote_received_at')
+  received_at = datetime.datetime.fromisoformat(received_at) if received_at else None
+
   # election not frozen or started
   if not election.voting_has_started():
     return render_template(request, 'election_not_started', {'election': election})
@@ -886,12 +903,18 @@ def one_election_cast_confirm(request, election):
     else:
       cast_ip = request.META.get('REMOTE_ADDR', None)
 
-    # prepare the vote to cast
+    # a ballot this voter already cast keeps the time it was first received, so
+    # sending it again can't make it look newer than the ballots cast after it
+    first_cast = CastVote.objects.filter(voter=voter, vote_hash=vote_fingerprint).order_by('cast_at').first()
+    if first_cast and received_at and first_cast.cast_at < received_at:
+      received_at = first_cast.cast_at
+
+    # prepare the vote to cast, stamped with the time it was received
     cast_vote_params = {
       'vote' : vote,
       'voter' : voter,
       'vote_hash': vote_fingerprint,
-      'cast_at': datetime.datetime.utcnow(),
+      'cast_at': received_at,
       'cast_ip': cast_ip
     }
 
@@ -945,6 +968,20 @@ def one_election_cast_confirm(request, election):
     if not voter:
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_confirm, args=[election.uuid]))
     
+    # without the time the ballot was received there is nothing to order it by, so
+    # it can't be confirmed (this fails closed): the voter has to cast it again
+    if received_at is None:
+      _forget_pending_vote(request)
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_rejected, args=[election.uuid]) + '?reason=no_reception_time')
+
+    # a ballot received before the one already on file for this voter doesn't replace
+    # it, however late its confirmation arrives.
+    # No try/except: if the comparison fails, the request fails and nothing is saved.
+    if voter.cast_at and cast_vote.cast_at <= voter.cast_at:
+      # discard the pending vote so it can't be retried, and tell the voter why
+      _forget_pending_vote(request)
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_rejected, args=[election.uuid]))
+
     # status update?
     if request.POST.get('status_update', False):
       status_update_message = request.POST.get('status_update_message')
@@ -961,7 +998,7 @@ def one_election_cast_confirm(request, election):
         status_update_message = status_update_message)
     
     # remove the vote from the store
-    del request.session['encrypted_vote']
+    _forget_pending_vote(request)
     
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_done, args=[election.uuid]))
   
@@ -1006,6 +1043,30 @@ def one_election_cast_done(request, election):
   # include_user is set to False if logout is happening
   return render_template(request, 'cast_done', {'election': election,
                                                 'vote_hash': vote_hash, 'logout': logout},
+                         include_user=(not logout))
+
+@election_view()
+def one_election_cast_rejected(request, election):
+  """
+  Shown when a ballot is rejected because it was received before
+  the ballot already recorded for this voter, or because the time it
+  was received is missing.
+  """
+  user = get_user(request)
+  voter = get_voter(request, user, election)
+
+  # same logout as one_election_cast_done: a rejection must not leave the session open
+  logout = False
+  if voter:
+    if voter.user == user and voter.user is not None:
+      logout = settings.LOGOUT_ON_CONFIRMATION
+    else:
+      request.session.pop('CURRENT_VOTER_ID', None)
+
+  missing_reception_time = (request.GET.get('reason') == 'no_reception_time')
+
+  return render_template(request, 'cast_rejected', {'election': election, 'logout': logout,
+                                                    'missing_reception_time': missing_reception_time},
                          include_user=(not logout))
 
 @election_view()

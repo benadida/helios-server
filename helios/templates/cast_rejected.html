@@ -1,0 +1,35 @@
+{% extends TEMPLATE_BASE %}
+{% block title %}Vote Rejected{% endblock %}
+
+{% block content %}
+<h1>{{election.name}} &mdash; Vote Rejected</h1>
+
+{% if missing_reception_time %}
+<p>
+  Your ballot was <b>not</b> recorded: the server has no record of when it received it
+  (for example, because it was sent before the server was updated).
+</p>
+<p>
+  Please vote again.
+</p>
+{% else %}
+<p>
+  Your ballot was <b>not</b> recorded: it was received before the ballot already on file for you,
+  so that ballot remains the valid one.
+</p>
+<p>
+  If you want to change your vote, vote again.
+</p>
+{% endif %}
+
+{% if logout %}
+<p><b>For your safety, we have logged you out.</b></p>
+<iframe width="0" height="0" border="0" frameborder="0" src="{% url "auth@logout" %}">
+</iframe>
+{% endif %}
+
+<p style="font-size: 1.4em;">
+[ <a href="{% url "election@view" election.uuid %}">return to election info</a> ]
+</p>
+
+{% endblock %}
