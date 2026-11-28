@@ -875,7 +875,16 @@ def one_election_cast_confirm(request, election):
 
   # if this user is a voter, prepare some stuff
   if voter:
-    vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote), type_hint='legacy/EncryptedVote').wrapped_obj
+    # a ballot that isn't valid JSON (corrupted or cut off on its way from the booth)
+    # can never be cast: drop it so the voter can vote again, instead of a 500
+    try:
+      vote_json = utils.from_json(encrypted_vote)
+    except Exception:
+      logging.warning("discarding unparseable encrypted vote for election %s" % election.uuid)
+      del request.session['encrypted_vote']
+      return HttpResponseBadRequest("Your ballot could not be read, so it was not cast. Please return to the election and vote again.")
+
+    vote = datatypes.LDObject.fromDict(vote_json, type_hint='legacy/EncryptedVote').wrapped_obj
 
     if 'HTTP_X_FORWARDED_FOR' in request.META:
       # HTTP_X_FORWARDED_FOR sometimes have a comma delimited list of IP addresses
