@@ -3095,6 +3095,24 @@ class PrivateElectionLoginTests(WebTest):
         self.assertContains(response, 'name="password"')
         self.assertContains(response, '/auth/start/google?return_url=')
 
+    def test_cast_confirm_with_unparseable_vote(self):
+        # a ballot cut off or corrupted on its way from the booth used to 500;
+        # it is dropped with a 400 so the voter can vote again
+        self.election.freeze()
+        self._add_password_voter()
+        voter = models.Voter.objects.get(election=self.election, voter_login_id='pw-voter')
+
+        session = self.client.session
+        session['CURRENT_VOTER_ID'] = voter.id
+        session['encrypted_vote'] = '{"answers": [{"choices" "truncated'
+        session.save()
+
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/cast_confirm')
+        self.assertStatusCode(response, 400)
+        self.assertIn(b'vote again', response.content)
+        self.assertNotIn('encrypted_vote', self.client.session)
+        self.assertEqual(models.CastVote.objects.filter(voter=voter).count(), 0)
+
     def test_eligibility_cannot_change_after_freeze(self):
         self.election.private_p = False
         self.election.save()
